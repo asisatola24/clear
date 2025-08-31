@@ -105,6 +105,18 @@
             object-fit: cover;
         }
 
+        .slide-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 20px;
+        }
+
         .slide h2 {
             font-size: 24px;
             margin-bottom: 15px;
@@ -547,22 +559,22 @@
     <section class="onboarding" id="onboarding">
         <div class="onboarding-slides">
             <div class="slide">
-                <div class="slide-img">
-                    <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80" alt="Graduation">
+            <div class="slide-img">
+                    <div class="slide-placeholder">🎓</div>
                 </div>
                 <h2>Welcome to Digital Clearance</h2>
                 <p>Complete your graduation clearance process digitally without the hassle of paperwork and long queues.</p>
             </div>
             <div class="slide">
                 <div class="slide-img">
-                    <img src="https://images.unsplash.com/photo-1560785496-3c9d27877182?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80" alt="Digital Process">
+                    <div class="slide-placeholder">📄</div>
                 </div>
                 <h2>Digital Clearance Process</h2>
                 <p>Submit your clearance requests, upload documents, and track your progress all in one place.</p>
             </div>
             <div class="slide">
                 <div class="slide-img">
-                    <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80" alt="Get Started">
+                    <div class="slide-placeholder">🚀</div>
                 </div>
                 <h2>Get Started Now</h2>
                 <p>Login or create an account to begin your clearance process and graduate with ease.</p>
