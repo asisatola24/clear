@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GradClear</string>
+    <string name="title_activity_main">GradClear</string>
+    <string name="package_name">com.yusuf.GradClear</string>
+    <string name="custom_url_scheme">com.yusuf.GradClear</string>
+</resources>

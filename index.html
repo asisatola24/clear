@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graduate Clearance System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4e54c8">
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
+    <style>
+        :root {
+            --primary-color: #4e54c8;
+            --secondary-color: #8f94fb;
+            --text-color: #333;
+            --bg-color: #f0f0f0;
+            --card-bg: #f0f0f0;
+            --shadow-light: #ffffff;
+            --shadow-dark: #d1d1d1;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --transition: all 0.3s ease;
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+
+        .dark-mode {
+            --text-color: #f0f0f0;
+            --bg-color: #1a1a1a;
+            --card-bg: #2d2d2d;
+            --shadow-light: #3d3d3d;
+            --shadow-dark: #1d1d1d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: var(--transition);
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: var(--safe-area-inset-top) 0 var(--safe-area-inset-bottom) 0;
+        }
+
+        .container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Onboarding Styles */
+        .onboarding {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .onboarding-slides {
+            display: flex;
+            width: 300%;
+            height: 100%;
+            transition: transform 0.5s ease;
+        }
+
+        .slide {
+            width: 33.33%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .slide-img {
+            width: 250px;
+            height: 250px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
+            overflow: hidden;
+        }
+
+        .slide-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .slide h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .slide p {
+            font-size: 16px;
+            margin-bottom: 30px;
+            max-width: 80%;
+        }
+
+        .dots {
+            display: flex;
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #ccc;
+            margin: 0 5px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .dot.active {
+            background-color: var(--primary-color);
+            transform: scale(1.2);
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 50px;
+            border: none;
+            background: var(--primary-color);
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+            transition: var(--transition);
+            outline: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 8px 8px 15px var(--shadow-dark), -8px -8px 15px var(--shadow-light);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        /* Auth Pages */
+        .auth-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 15px 15px 30px var(--shadow-dark), -15px -15px 30px var(--shadow-light);
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-header h2 {
+            color: var(--primary-color);
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .auth-header p {
+            color: var(--text-color);
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            border-radius: 15px;
+            border: none;
+            background: var(--bg-color);
+            color: var(--text-color);
+            box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .form-control:focus {
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+        }
+
+        .role-selector {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .role-option {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            margin: 0 5px;
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+            transition: var(--transition);
+        }
+
+        .role-option.active {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: inset 5px 5px 10px rgba(0, 0, 0, 0.1), inset -5px -5px 10px rgba(255, 255, 255, 0.1);
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .auth-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .auth-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Dashboard Styles */
+        .dashboard {
+            width: 100%;
+            min-height: 100vh;
+            padding: 20px;
+            display: none;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--shadow-dark);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-right: 15px;
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+        }
+
+        .dashboard-nav {
+            display: flex;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .nav-item {
+            padding: 10px 20px;
+            margin-right: 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+            transition: var(--transition);
+        }
+
+        .nav-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--shadow-dark);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: var(--warning-color);
+        }
+
+        .status-approved {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: var(--success-color);
+        }
+
+        .status-rejected {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: var(--danger-color);
+        }
+
+        /* Dark Mode Toggle */
+        .dark-mode-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        /* Install Prompt */
+        .install-prompt {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: none;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-100%);
+            }
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .slide-img {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .auth-container {
+                padding: 10px;
+            }
+            
+            .auth-card {
+                padding: 20px;
+            }
+            
+            .dashboard {
+                padding: 15px;
+            }
+            
+            .role-selector {
+                flex-direction: column;
+            }
+            
+            .role-option {
+                margin: 5px 0;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            background: var(--card-bg);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .notification i {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+
+        .notification.success i {
+            color: var(--success-color);
+        }
+
+        .notification.error i {
+            color: var(--danger-color);
+        }
+        
+        /* Mobile-specific styles */
+        @media (max-width: 480px) {
+            .btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+            
+            .auth-card {
+                padding: 20px 15px;
+            }
+            
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .dashboard-header .btn {
+                margin-top: 15px;
+                align-self: flex-end;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Onboarding Section -->
+    <section class="onboarding" id="onboarding">
+        <div class="onboarding-slides">
+            <div class="slide">
+                <div class="slide-img">
+                    <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80" alt="Graduation">
+                </div>
+                <h2>Welcome to Graduate Clearance</h2>
+                <p>Complete your graduation clearance process digitally without the hassle of paperwork and long queues.</p>
+            </div>
+            <div class="slide">
+                <div class="slide-img">
+                    <img src="https://images.unsplash.com/photo-1560785496-3c9d27877182?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80" alt="Digital Process">
+                </div>
+                <h2>Digital Clearance Process</h2>
+                <p>Submit your clearance requests, upload documents, and track your progress all in one place.</p>
+            </div>
+            <div class="slide">
+                <div class="slide-img">
+                    <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80" alt="Get Started">
+                </div>
+                <h2>Get Started Now</h2>
+                <p>Login or create an account to begin your clearance process and graduate with ease.</p>
+                <button class="btn" onclick="showAuthPage('login')">Get Started</button>
+            </div>
+        </div>
+        <div class="dots">
+            <div class="dot active" onclick="goToSlide(0)"></div>
+            <div class="dot" onclick="goToSlide(1)"></div>
+            <div class="dot" onclick="goToSlide(2)"></div>
+        </div>
+    </section>
+
+    <!-- Auth Pages -->
+    <div class="container" id="auth-container" style="display: none;">
+        <div class="auth-container">
+            <!-- Login Page -->
+            <div class="auth-card" id="login-card">
+                <div class="auth-header">
+                    <h2>Welcome Back</h2>
+                    <p>Sign in to continue your clearance process</p>
+                </div>
+                <div class="role-selector">
+                    <div class="role-option active" data-role="student">Student</div>
+                    <div class="role-option" data-role="officer">Officer</div>
+                    <div class="role-option" data-role="admin">Admin</div>
+                </div>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" class="form-control" id="login-email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" class="form-control" id="login-password" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%;">Login</button>
+                </form>
+                <div class="auth-footer">
+                    <p>Don't have an account? <span class="auth-link" onclick="showAuthPage('signup')">Sign Up</span></p>
+                </div>
+            </div>
+
+            <!-- Signup Page -->
+            <div class="auth-card" id="signup-card" style="display: none;">
+                <div class="auth-header">
+                    <h2>Create Account</h2>
+                    <p>Sign up to start your clearance process</p>
+                </div>
+                <div class="role-selector">
+                    <div class="role-option active" data-role="student">Student</div>
+                    <div class="role-option" data-role="officer">Officer</div>
+                    <div class="role-option" data-role="admin">Admin</div>
+                </div>
+                <form id="signup-form">
+                    <div class="form-group">
+                        <label for="signup-name">Full Name</label>
+                        <input type="text" class="form-control" id="signup-name" placeholder="Enter your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-email">Email</label>
+                        <input type="email" class="form-control" id="signup-email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" class="form-control" id="signup-password" placeholder="Create a password" required>
+                    </div>
+                    <div class="form-group" id="student-id-field">
+                        <label for="signup-student-id">Student ID</label>
+                        <input type="text" class="form-control" id="signup-student-id" placeholder="Enter your student ID">
+                    </div>
+                    <div class="form-group" id="department-field" style="display: none;">
+                        <label for="signup-department">Department</label>
+                        <input type="text" class="form-control" id="signup-department" placeholder="Enter your department">
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%;">Sign Up</button>
+                </form>
+                <div class="auth-footer">
+                    <p>Already have an account? <span class="auth-link" onclick="showAuthPage('login')">Login</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Dashboard -->
+    <div class="dashboard" id="student-dashboard">
+        <div class="dashboard-header">
+            <div class="user-info">
+                <div class="user-avatar">S</div>
+                <div>
+                    <h3>Student Dashboard</h3>
+                    <p id="student-welcome">Welcome, Student!</p>
+                </div>
+            </div>
+            <button class="btn btn-outline" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="dashboard-nav">
+            <div class="nav-item active" data-tab="clearance">Clearance Status</div>
+            <div class="nav-item" data-tab="submit">Submit Request</div>
+            <div class="nav-item" data-tab="documents">My Documents</div>
+            <div class="nav-item" data-tab="profile">Profile</div>
+        </div>
+
+        <div class="card" id="clearance-tab">
+            <div class="card-header">
+                <div class="card-title">Clearance Status</div>
+            </div>
+            <div id="clearance-status">
+                <div class="status-item">
+                    <p>Library</p>
+                    <span class="status-badge status-pending">Pending</span>
+                </div>
+                <div class="status-item">
+                    <p>Bursary</p>
+                    <span class="status-badge status-approved">Approved</span>
+                </div>
+                <div class="status-item">
+                    <p>Department</p>
+                    <span class="status-badge status-rejected">Rejected</span>
+                </div>
+                <div class="status-item">
+                    <p>Hostel</p>
+                    <span class="status-badge status-pending">Pending</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="submit-tab" style="display: none;">
+            <div class="card-header">
+                <div class="card-title">Submit Clearance Request</div>
+            </div>
+            <form id="request-form">
+                <div class="form-group">
+                    <label for="clearance-type">Clearance Type</label>
+                    <select class="form-control" id="clearance-type" required>
+                        <option value="">Select clearance type</option>
+                        <option value="library">Library</option>
+                        <option value="bursary">Bursary</option>
+                        <option value="department">Department</option>
+                        <option value="hostel">Hostel</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="clearance-document">Upload Document</label>
+                    <input type="file" class="form-control" id="clearance-document" required>
+                </div>
+                <button type="submit" class="btn">Submit Request</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Officer Dashboard -->
+    <div class="dashboard" id="officer-dashboard">
+        <div class="dashboard-header">
+            <div class="user-info">
+                <div class="user-avatar">O</div>
+                <div>
+                    <h3>Officer Dashboard</h3>
+                    <p id="officer-welcome">Welcome, Officer!</p>
+                </div>
+            </div>
+            <button class="btn btn-outline" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="dashboard-nav">
+            <div class="nav-item active" data-tab="requests">Pending Requests</div>
+            <div class="nav-item" data-tab="approved">Approved</div>
+            <div class="nav-item" data-tab="rejected">Rejected</div>
+        </div>
+
+        <div class="card" id="requests-tab">
+            <div class="card-header">
+                <div class="card-title">Pending Clearance Requests</div>
+            </div>
+            <div id="pending-requests">
+                <div class="request-item">
+                    <p><strong>John Doe</strong> (STU001)</p>
+                    <p>Library Clearance</p>
+                    <div class="action-buttons">
+                        <button class="btn" style="padding: 5px 10px; margin-right: 10px;">Approve</button>
+                        <button class="btn btn-outline" style="padding: 5px 10px;">Reject</button>
+                    </div>
+                </div>
+                <div class="request-item">
+                    <p><strong>Jane Smith</strong> (STU002)</p>
+                    <p>Bursary Clearance</p>
+                    <div class="action-buttons">
+                        <button class="btn" style="padding: 5px 10px; margin-right: 10px;">Approve</button>
+                        <button class="btn btn-outline" style="padding: 5px 10px;">Reject</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div class="dashboard" id="admin-dashboard">
+        <div class="dashboard-header">
+            <div class="user-info">
+                <div class="user-avatar">A</div>
+                <div>
+                    <h3>Admin Dashboard</h3>
+                    <p id="admin-welcome">Welcome, Admin!</p>
+                </div>
+            </div>
+            <button class="btn btn-outline" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="dashboard-nav">
+            <div class="nav-item active" data-tab="users">Manage Users</div>
+            <div class="nav-item" data-tab="reports">Reports</div>
+            <div class="nav-item" data-tab="system">System Settings</div>
+        </div>
+
+        <div class="card" id="users-tab">
+            <div class="card-header">
+                <div class="card-title">User Management</div>
+            </div>
+            <div id="user-list">
+                <div class="user-item">
+                    <p><strong>John Doe</strong> - Student (STU001)</p>
+                    <button class="btn btn-outline" style="padding: 5px 10px;">Edit</button>
+                </div>
+                <div class="user-item">
+                    <p><strong>Library Office</strong> - Officer (LIB001)</p>
+                    <button class="btn btn-outline" style="padding: 5px 10px;">Edit</button>
+                </div>
+                <div class="user-item">
+                    <p><strong>Admin User</strong> - Admin (ADM001)</p>
+                    <button class="btn btn-outline" style="padding: 5px 10px;">Edit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dark Mode Toggle -->
+    <div class="dark-mode-toggle" id="dark-mode-toggle">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <!-- Install Prompt -->
+    <div class="install-prompt" id="install-prompt">
+        <p>Install this app for better experience</p>
+        <button class="btn" id="install-btn" style="margin-top: 10px;">Install App</button>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notification-message">Operation completed successfully</span>
+    </div>
+
+    <script>
+        // Firebase configuration (replace with your actual config)
+        const firebaseConfig = {
+  apiKey: "AIzaSyBAWS4c_mvUEBe4_TUCBFigkK5Y28CzQ5Y",
+  authDomain: "clearance-app-6b4df.firebaseapp.com",
+  databaseURL: "https://clearance-app-6b4df-default-rtdb.firebaseio.com",
+  projectId: "clearance-app-6b4df",
+  storageBucket: "clearance-app-6b4df.firebasestorage.app",
+  messagingSenderId: "873782738685",
+  appId: "1:873782738685:web:fb8406296655ef73a9c894",
+  measurementId: "G-234SYTGSLJ"
+};
+        // Initialize Firebase
+        let app;
+        if (firebase.apps.length === 0) {
+            app = firebase.initializeApp(firebaseConfig);
+        } else {
+            app = firebase.app();
+        }
+        
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+
+        // DOM Elements
+        const onboarding = document.getElementById('onboarding');
+        const authContainer = document.getElementById('auth-container');
+        const loginCard = document.getElementById('login-card');
+        const signupCard = document.getElementById('signup-card');
+        const studentDashboard = document.getElementById('student-dashboard');
+        const officerDashboard = document.getElementById('officer-dashboard');
+        const adminDashboard = document.getElementById('admin-dashboard');
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const notification = document.getElementById('notification');
+        const installPrompt = document.getElementById('install-prompt');
+        const installBtn = document.getElementById('install-btn');
+
+        // Current user data
+        let currentUser = null;
+        let currentRole = 'student';
+        let deferredPrompt;
+
+        // PWA Installation
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installPrompt.style.display = 'block';
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installPrompt.style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        // Onboarding Slider
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.dot');
+        const slidesContainer = document.querySelector('.onboarding-slides');
+
+        function goToSlide(slideIndex) {
+            currentSlide = slideIndex;
+            slidesContainer.style.transform = `translateX(-${currentSlide * 33.33}%)`;
+            
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        // Show Auth Page
+        function showAuthPage(page) {
+            onboarding.style.display = 'none';
+            authContainer.style.display = 'flex';
+            
+            if (page === 'login') {
+                loginCard.style.display = 'block';
+                signupCard.style.display = 'none';
+            } else {
+                loginCard.style.display = 'none';
+                signupCard.style.display = 'block';
+            }
+        }
+
+        // Role Selection
+        const roleOptions = document.querySelectorAll('.role-option');
+        roleOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                roleOptions.forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                currentRole = option.getAttribute('data-role');
+                
+                // Show/hide fields based on role
+                if (currentRole === 'student') {
+                    document.getElementById('student-id-field').style.display = 'block';
+                    document.getElementById('department-field').style.display = 'none';
+                } else if (currentRole === 'officer') {
+                    document.getElementById('student-id-field').style.display = 'none';
+                    document.getElementById('department-field').style.display = 'block';
+                } else {
+                    document.getElementById('student-id-field').style.display = 'none';
+                    document.getElementById('department-field').style.display = 'none';
+                }
+            });
+        });
+
+        // Login Form Submission
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            // Show loading state
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.innerHTML = '<div class="spinner" style="width: 20px; height: 20px;"></div>';
+            submitBtn.disabled = true;
+            
+            // Firebase authentication
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Get user data from Firestore
+                    return db.collection('users').doc(userCredential.user.uid).get();
+                })
+                .then((doc) => {
+                    if (doc.exists) {
+                        currentUser = { id: doc.id, ...doc.data() };
+                        
+                        // Redirect based on role
+                        authContainer.style.display = 'none';
+                        if (currentUser.role === 'student') {
+                            studentDashboard.style.display = 'block';
+                            document.getElementById('student-welcome').textContent = `Welcome, ${currentUser.name}!`;
+                        } else if (currentUser.role === 'officer') {
+                            officerDashboard.style.display = 'block';
+                            document.getElementById('officer-welcome').textContent = `Welcome, ${currentUser.name}!`;
+                        } else if (currentUser.role === 'admin') {
+                            adminDashboard.style.display = 'block';
+                            document.getElementById('admin-welcome').textContent = `Welcome, ${currentUser.name}!`;
+                        }
+                        
+                        showNotification('Login successful!', 'success');
+                    } else {
+                        showNotification('User data not found.', 'error');
+                    }
+                })
+                .catch((error) => {
+                    showNotification(error.message, 'error');
+                })
+                .finally(() => {
+                    // Reset button state
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                });
+        });
+
+        // Signup Form Submission
+        document.getElementById('signup-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const studentId = document.getElementById('signup-student-id').value;
+            const department = document.getElementById('signup-department').value;
+            
+            // Show loading state
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.innerHTML = '<div class="spinner" style="width: 20px; height: 20px;"></div>';
+            submitBtn.disabled = true;
+            
+            // Firebase authentication
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Create user document in Firestore
+                    return db.collection('users').doc(userCredential.user.uid).set({
+                        name: name,
+                        email: email,
+                        role: currentRole,
+                        studentId: studentId || null,
+                        department: department || null,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                })
+                .then(() => {
+                    showNotification('Account created successfully!', 'success');
+                    showAuthPage('login');
+                })
+                .catch((error) => {
+                    showNotification(error.message, 'error');
+                })
+                .finally(() => {
+                    // Reset button state
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                });
+        });
+
+        // Logout Function
+        function logout() {
+            auth.signOut().then(() => {
+                studentDashboard.style.display = 'none';
+                officerDashboard.style.display = 'none';
+                adminDashboard.style.display = 'none';
+                authContainer.style.display = 'none';
+                onboarding.style.display = 'block';
+                currentUser = null;
+            });
+        }
+
+        // Dashboard Navigation
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const tabName = item.getAttribute('data-tab');
+                
+                // Remove active class from all items
+                navItems.forEach(navItem => navItem.classList.remove('active'));
+                // Add active class to clicked item
+                item.classList.add('active');
+                
+                // Hide all tabs
+                const tabs = document.querySelectorAll('.card');
+                tabs.forEach(tab => tab.style.display = 'none');
+                
+                // Show selected tab
+                document.getElementById(`${tabName}-tab`).style.display = 'block';
+            });
+        });
+
+        // Dark Mode Toggle
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const icon = darkModeToggle.querySelector('i');
+            if (document.body.classList.contains('dark-mode')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        });
+
+        // Check for saved dark mode preference
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+            const icon = darkModeToggle.querySelector('i');
+            icon.classList.remove('fa-moon');
+            icon.classList.add('fa-sun');
+        }
+
+        // Show Notification
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            const icon = notification.querySelector('i');
+            const messageEl = document.getElementById('notification-message');
+            
+            // Set message and type
+            messageEl.textContent = message;
+            notification.className = `notification ${type}`;
+            
+            // Set icon based on type
+            if (type === 'success') {
+                icon.className = 'fas fa-check-circle';
+            } else {
+                icon.className = 'fas fa-exclamation-circle';
+            }
+            
+            // Show notification
+            notification.classList.add('show');
+            
+            // Hide after 3 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Check if user is already logged in
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // User is signed in, get user data
+                db.collection('users').doc(user.uid).get()
+                    .then((doc) => {
+                        if (doc.exists) {
+                            currentUser = { id: doc.id, ...doc.data() };
+                            onboarding.style.display = 'none';
+                            authContainer.style.display = 'none';
+                            
+                            if (currentUser.role === 'student') {
+                                studentDashboard.style.display = 'block';
+                                document.getElementById('student-welcome').textContent = `Welcome, ${currentUser.name}!`;
+                            } else if (currentUser.role === 'officer') {
+                                officerDashboard.style.display = 'block';
+                                document.getElementById('officer-welcome').textContent = `Welcome, ${currentUser.name}!`;
+                            } else if (currentUser.role === 'admin') {
+                                adminDashboard.style.display = 'block';
+                                document.getElementById('admin-welcome').textContent = `Welcome, ${currentUser.name}!`;
+                            }
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error getting user document:", error);
+                    });
+            }
+        });
+
+        // Initialize the app
+        function init() {
+            // Set up event listeners for onboarding navigation
+            setInterval(() => {
+                currentSlide = (currentSlide + 1) % slides.length;
+                goToSlide(currentSlide);
+            }, 5000);
+            
+            // Register service worker for PWA
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then((registration) => {
+                            console.log('SW registered: ', registration);
+                        })
+                        .catch((registrationError) => {
+                            console.log('SW registration failed: ', registrationError);
+                        });
+                });
+            }
+        }
+
+        // Run initialization when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
